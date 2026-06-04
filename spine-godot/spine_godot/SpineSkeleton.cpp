@@ -173,8 +173,7 @@ Ref<SpineAttachment> SpineSkeleton::get_attachment_by_slot_name(const String &sl
 	SPINE_CHECK(skeleton, nullptr)
 	auto attachment = skeleton->getAttachment(SPINE_STRING_TMP(slot_name), SPINE_STRING_TMP(attachment_name));
 	if (!attachment) return nullptr;
-	Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-	attachment_ref->set_spine_object(*sprite->get_skeleton_data_res(), attachment);
+	Ref<SpineAttachment> attachment_ref = SpineAttachment::create_typed_wrapper(*sprite->get_skeleton_data_res(), attachment);
 	return attachment_ref;
 }
 
@@ -182,8 +181,7 @@ Ref<SpineAttachment> SpineSkeleton::get_attachment_by_slot_index(int slot_index,
 	SPINE_CHECK(skeleton, nullptr)
 	auto attachment = skeleton->getAttachment(slot_index, SPINE_STRING_TMP(attachment_name));
 	if (!attachment) return nullptr;
-	Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-	attachment_ref->set_spine_object(*sprite->get_skeleton_data_res(), attachment);
+	Ref<SpineAttachment> attachment_ref = SpineAttachment::create_typed_wrapper(*sprite->get_skeleton_data_res(), attachment);
 	return attachment_ref;
 }
 

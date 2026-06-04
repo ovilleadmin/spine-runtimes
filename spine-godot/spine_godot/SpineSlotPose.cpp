@@ -84,8 +84,7 @@ Ref<SpineAttachment> SpineSlotPose::get_attachment() {
 	SPINE_CHECK(get_spine_object(), nullptr)
 	auto attachment = get_spine_object()->getAttachment();
 	if (!attachment) return nullptr;
-	Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-	attachment_ref->set_spine_object(*get_spine_owner()->get_skeleton_data_res(), attachment);
+	Ref<SpineAttachment> attachment_ref = SpineAttachment::create_typed_wrapper(*get_spine_owner()->get_skeleton_data_res(), attachment);
 	return attachment_ref;
 }
 

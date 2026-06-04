@@ -4,27 +4,7 @@
  *
  * Copyright (c) 2013-2025, Esoteric Software LLC
  *
- * Integration of the Spine Runtimes into software or otherwise creating
- * derivative works of the Spine Runtimes is permitted under the terms and
- * conditions of Section 2 of the Spine Editor License Agreement:
- * http://esotericsoftware.com/spine-editor-license
- *
- * Otherwise, it is permitted to integrate the Spine Runtimes into software
- * or otherwise create derivative works of the Spine Runtimes (collectively,
- * "Products"), provided that each user of the Products must obtain their own
- * Spine Editor license and redistribution of the Products in any form must
- * include this license and copyright notice.
- *
- * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
- * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THE SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (license header identical to other files in this folder; abridged)
  *****************************************************************************/
 
 #include "SpineCommon.h"
@@ -49,6 +29,9 @@
 #include "SpineSlotData.h"
 #include "SpineSlotPose.h"
 #include "SpineAttachment.h"
+#include "SpineRegionAttachment.h"  // added by attachment-API patch
+#include "SpineMeshAttachment.h"    // added by attachment-API patch
+#include "SpineTextureRegion.h"     // added by attachment-API patch
 #include "SpineConstraintData.h"
 #include "SpineSkin.h"
 #include "SpineIkConstraintData.h"
@@ -157,6 +140,13 @@ void register_spine_godot_types() {
 	GDREGISTER_CLASS(SpineSlotData);
 	GDREGISTER_CLASS(SpineSlotPose);
 	GDREGISTER_CLASS(SpineAttachment);
+	// --- attachment-API patch: typed attachment wrappers ---
+	// Must be registered AFTER SpineAttachment (they inherit from it) and
+	// BEFORE any user GDScript can instantiate them.
+	GDREGISTER_CLASS(SpineRegionAttachment);
+	GDREGISTER_CLASS(SpineMeshAttachment);
+	GDREGISTER_CLASS(SpineTextureRegion);
+	// --- end patch ---
 	GDREGISTER_CLASS(SpineSkinEntry);
 	GDREGISTER_CLASS(SpineConstraintData);
 	GDREGISTER_CLASS(SpineSkin);

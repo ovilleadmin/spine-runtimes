@@ -119,6 +119,11 @@ sources.append("spine_godot/SpineTrackEntry.cpp")
 sources.append("spine_godot/SpineTransformConstraint.cpp")
 sources.append("spine_godot/SpineTransformConstraintData.cpp")
 sources.append("spine_godot/SpineTransformConstraintPose.cpp")
+# --- attachment-API patch ---
+sources.append("spine_godot/SpineRegionAttachment.cpp")
+sources.append("spine_godot/SpineMeshAttachment.cpp")
+sources.append("spine_godot/SpineTextureRegion.cpp")
+# --- end patch ---
 sources.append("spine_godot/register_types.cpp")
 
 if env["target"] in ["editor", "template_debug"]:
