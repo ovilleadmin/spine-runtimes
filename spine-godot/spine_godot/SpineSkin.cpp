@@ -83,9 +83,8 @@ void SpineSkin::set_attachment(int slot_index, const String &name, Ref<SpineAtta
 Ref<SpineAttachment> SpineSkin::get_attachment(int slot_index, const String &name) {
 	SPINE_CHECK(get_spine_object(), nullptr)
 	auto attachment = get_spine_object()->getAttachment(slot_index, SPINE_STRING(name));
-	if (attachment) return nullptr;
-	Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-	attachment_ref->set_spine_object(get_spine_owner(), attachment);
+	if (!attachment) return nullptr;
+	Ref<SpineAttachment> attachment_ref = SpineAttachment::create_typed_wrapper(get_spine_owner(), attachment);
 	return attachment_ref;
 }
 
@@ -116,8 +115,7 @@ Array SpineSkin::find_attachments_for_slot(int slot_index) {
 		if (!attachments[i]) {
 			result[i] = Ref<SpineAttachment>(nullptr);
 		} else {
-			Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-			attachment_ref->set_spine_object(get_spine_owner(), attachments[i]);
+			Ref<SpineAttachment> attachment_ref = SpineAttachment::create_typed_wrapper(get_spine_owner(), attachments[i]);
 			result[i] = attachment_ref;
 		}
 	}
@@ -162,8 +160,7 @@ Array SpineSkin::get_attachments() {
 		Ref<SpineSkinEntry> entry_ref = memnew(SpineSkinEntry);
 		Ref<SpineAttachment> attachment_ref = nullptr;
 		if (entry._attachment) {
-			attachment_ref = Ref<SpineAttachment>(memnew(SpineAttachment));
-			attachment_ref->set_spine_object(get_spine_owner(), entry._attachment);
+			attachment_ref = SpineAttachment::create_typed_wrapper(get_spine_owner(), entry._attachment);
 		}
 		entry_ref->init(entry._slotIndex, entry._name.buffer(), attachment_ref);
 		result.push_back(entry_ref);

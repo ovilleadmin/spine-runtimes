@@ -29,6 +29,12 @@
 
 #include "SpineAttachment.h"
 #include "SpineCommon.h"
+// The subclass headers are included here so copy() can return the correctly
+// typed wrapper depending on the underlying spine-cpp attachment type.
+#include "SpineRegionAttachment.h"
+#include "SpineMeshAttachment.h"
+#include <spine/RegionAttachment.h>
+#include <spine/MeshAttachment.h>
 
 void SpineAttachment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_attachment_name"), &SpineAttachment::get_attachment_name);
@@ -54,7 +60,28 @@ Ref<SpineAttachment> SpineAttachment::copy() {
 	SPINE_CHECK(get_spine_object(), nullptr)
 	auto copy = get_spine_object()->copy();
 	if (!copy) return nullptr;
-	Ref<SpineAttachment> attachment_ref(memnew(SpineAttachment));
-	attachment_ref->set_spine_object(get_spine_owner(), copy);
+	return create_typed_wrapper(get_spine_owner(), copy);
+}
+
+// Static helper: construct a correctly-typed SpineAttachment subclass wrapper
+// for an arbitrary spine::Attachment*. Used by all call sites that return
+// attachments to GDScript (SpineSkin::get_attachment,
+// SpineSkin::find_attachments_for_slot, SpineSkin::get_attachments,
+// SpineSkeleton::get_attachment, SpineSlot::get_attachment) so that GDScript
+// consumers receive the typed subclass (SpineRegionAttachment,
+// SpineMeshAttachment) and can call set_region() on mesh/region attachments.
+// Other attachment types (clipping, bounding box, path, point) fall through
+// to the base SpineAttachment wrapper, matching pre-patch behaviour.
+Ref<SpineAttachment> SpineAttachment::create_typed_wrapper(const SpineSkeletonDataResource *owner, spine::Attachment *attachment) {
+	if (!attachment) return nullptr;
+	Ref<SpineAttachment> attachment_ref;
+	if (attachment->getRTTI().isExactly(spine::RegionAttachment::rtti)) {
+		attachment_ref = Ref<SpineAttachment>(memnew(SpineRegionAttachment));
+	} else if (attachment->getRTTI().isExactly(spine::MeshAttachment::rtti)) {
+		attachment_ref = Ref<SpineAttachment>(memnew(SpineMeshAttachment));
+	} else {
+		attachment_ref = Ref<SpineAttachment>(memnew(SpineAttachment));
+	}
+	attachment_ref->set_spine_object(owner, attachment);
 	return attachment_ref;
 }
