@@ -888,9 +888,15 @@ void SpineSprite::update_meshes(Ref<SpineSkeleton> skeleton_ref) {
 		} else if (attachment->getRTTI().isExactly(spine::MeshAttachment::rtti)) {
 			auto *mesh = (spine::MeshAttachment *) attachment;
 
+			// PilotPlan_Spine attachment-API patch (2026-05-13):
+			// Linked meshes (linkedmesh attachment type) hold a null region — the parent owns it.
+			// UVs and triangles are already copied from parent at load time by spine-cpp
+			// MeshAttachment::setParentMesh, so only the texture lookup needs the fallback.
+			spine::MeshAttachment *region_source = mesh->getParentMesh() ? mesh->getParentMesh() : mesh;
+
 			vertices->setSize(mesh->getWorldVerticesLength(), 0);
 			mesh->computeWorldVertices(*slot, *vertices);
-			renderer_object = (SpineRendererObject *) ((spine::AtlasRegion *) mesh->getRegion())->page->texture;
+			renderer_object = (SpineRendererObject *) ((spine::AtlasRegion *) region_source->getRegion())->page->texture;
 			uvs = &mesh->getUVs();
 			indices = &mesh->getTriangles();
 
