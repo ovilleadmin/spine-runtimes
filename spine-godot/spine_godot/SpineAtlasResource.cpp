@@ -77,21 +77,23 @@ public:
 	}
 
 	static bool fix_path(String &path) {
-		const String prefix = "res:/";
-		auto i = path.find(prefix);
-		if (i == -1) {
+		// PilotPlan_Spine attachment-API patch (2026-05-13):
+		// Normalize any "res:" + N-slashes prefix into the canonical "res://" form.
+		// The original implementation had an off-by-one (sub_str_pos = i + SSIZE(prefix) - 1)
+		// that included the trailing '/' of the "res:/" prefix in the substring, producing
+		// "res:///path" whenever the input was the standard "res://path". That broken
+		// string still routed through ResourceLoader::load(), which then failed for any
+		// asset whose textures weren't already in the editor's UID cache — manifesting
+		// as the triple-slash texture-load error reported on binary .skel imports.
+		const int colon = path.find("res:");
+		if (colon == -1) {
 			return false;
 		}
-
-		auto sub_str_pos = i + SSIZE(prefix) - 1;
-		auto res = path.substr(sub_str_pos);
-		if (!EMPTY(res)) {
-			if (res[0] != '/') {
-				path = prefix + String("/") + res;
-			} else {
-				path = prefix + res;
-			}
+		int after_slashes = colon + 4;  // past "res:"
+		while (after_slashes < path.length() && path[after_slashes] == '/') {
+			after_slashes++;
 		}
+		path = "res://" + path.substr(after_slashes);
 		return true;
 	}
 
