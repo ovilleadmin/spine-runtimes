@@ -74,5 +74,8 @@ bool SpineMeshAttachment::is_linked_mesh() {
 
 bool SpineMeshAttachment::has_sequence() {
 	SPINE_CHECK(_mesh_attachment(), false)
-	return _mesh_attachment()->getSequence() != nullptr;
+	// spine-cpp 4.3: getSequence() returns a Sequence& (never null — readSequence
+	// always creates at least a default 1-region sequence). A "real" animated
+	// sequence has more than one region.
+	return _mesh_attachment()->getSequence().getRegions().size() > 1;
 }

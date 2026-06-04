@@ -81,5 +81,8 @@ void SpineRegionAttachment::set_color(Color c) {
 
 bool SpineRegionAttachment::has_sequence() {
 	SPINE_CHECK(_region_attachment(), false)
-	return _region_attachment()->getSequence() != nullptr;
+	// spine-cpp 4.3: getSequence() returns a Sequence& (never null — readSequence
+	// always creates at least a default 1-region sequence). A "real" animated
+	// sequence has more than one region.
+	return _region_attachment()->getSequence().getRegions().size() > 1;
 }
