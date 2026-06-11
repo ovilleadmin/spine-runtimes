@@ -28,7 +28,9 @@ public:
 	// --- texture region ---
 	// Mesh attachments REQUIRE update_region() after set_region() to
 	// recompute per-vertex UVs from the new region's UV bounds. set_region
-	// here calls updateRegion() automatically for convenience.
+	// here calls spine-cpp updateSequence() automatically for convenience
+	// (4.3: regions live in the attachment's always-present Sequence; the
+	// 4.2 setRegion()/updateRegion() API is gone).
 	void set_region(Ref<SpineTextureRegion> region);
 	Ref<SpineTextureRegion> get_spine_texture_region();
 	void update_region();
@@ -45,8 +47,8 @@ public:
 	// --- structural introspection (M3.7, for spine_feature_guard binary
 	// .skel scanning). linkedmesh + sequence features are flags on the
 	// underlying spine-cpp MeshAttachment, but unbound in stock spine-godot. ---
-	bool is_linked_mesh();   // true if getParentMesh() != nullptr
-	bool has_sequence();     // true if getSequence() != nullptr
+	bool is_linked_mesh();   // true if getSourceMesh() != nullptr (4.3 name; was getParentMesh)
+	bool has_sequence();     // true if the sequence has > 1 region (a real multi-frame sequence)
 
 private:
 	spine::MeshAttachment *_mesh_attachment() {

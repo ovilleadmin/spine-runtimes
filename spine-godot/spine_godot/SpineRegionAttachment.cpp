@@ -39,9 +39,22 @@ void SpineRegionAttachment::set_region(Ref<SpineTextureRegion> region) {
 		ERR_PRINT("SpineRegionAttachment::set_region: region is invalid");
 		return;
 	}
+	// spine-cpp 4.3: attachments no longer hold a region directly; the region
+	// lives in an always-present Sequence (1 entry for plain attachments).
+	// Swap = replace the sequence's region slot + updateSequence() so the
+	// sequence's cached UVs/offsets are recomputed for the new region.
+	auto &sequence = _region_attachment()->getSequence();
+	auto &regions = sequence.getRegions();
+	if (regions.size() > 1) {
+		ERR_PRINT("SpineRegionAttachment::set_region: attachment has a multi-frame sequence; replacing its texture would collapse the sequence animation. Not supported.");
+		return;
+	}
 	owned_region = region; // keep alive as long as this attachment wrapper is alive
-	_region_attachment()->setRegion(region->get_spine_object());
-	_region_attachment()->updateRegion();
+	if (regions.size() == 0)
+		regions.add(region->get_spine_object());
+	else
+		regions[0] = region->get_spine_object();
+	_region_attachment()->updateSequence();
 }
 
 Ref<SpineTextureRegion> SpineRegionAttachment::get_spine_texture_region() {
@@ -50,7 +63,7 @@ Ref<SpineTextureRegion> SpineRegionAttachment::get_spine_texture_region() {
 
 void SpineRegionAttachment::update_region() {
 	SPINE_CHECK(_region_attachment(), )
-	_region_attachment()->updateRegion();
+	_region_attachment()->updateSequence();
 }
 
 float SpineRegionAttachment::get_x()        { SPINE_CHECK(_region_attachment(), 0) return _region_attachment()->getX(); }

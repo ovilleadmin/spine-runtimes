@@ -28,13 +28,27 @@ void SpineMeshAttachment::set_region(Ref<SpineTextureRegion> region) {
 		ERR_PRINT("SpineMeshAttachment::set_region: region is invalid");
 		return;
 	}
+	// spine-cpp 4.3: attachments no longer hold a region directly; the region
+	// lives in an always-present Sequence (1 entry for plain attachments).
+	// The render loop resolves sequence.getRegion(resolveIndex(pose)) and reads
+	// UVs from the sequence's cache, so swapping = replace the sequence's
+	// region slot + updateSequence().
+	auto &sequence = _mesh_attachment()->getSequence();
+	auto &regions = sequence.getRegions();
+	if (regions.size() > 1) {
+		ERR_PRINT("SpineMeshAttachment::set_region: attachment has a multi-frame sequence; replacing its texture would collapse the sequence animation. Not supported.");
+		return;
+	}
 	owned_region = region;
-	_mesh_attachment()->setRegion(region->get_spine_object());
-	// updateRegion() is essential for mesh attachments — the per-vertex UVs
-	// are cached and must be recomputed from the new region's UV bounds.
-	// Skip this and the mesh will render with the old region's UVs, which
-	// is the most common pitfall of this API.
-	_mesh_attachment()->updateRegion();
+	if (regions.size() == 0)
+		regions.add(region->get_spine_object());
+	else
+		regions[0] = region->get_spine_object();
+	// updateSequence() is essential for mesh attachments — the per-vertex UVs
+	// are cached (per sequence entry in 4.3) and must be recomputed from the
+	// new region's UV bounds. Skip this and the mesh renders with the old
+	// region's UVs, which is the most common pitfall of this API.
+	_mesh_attachment()->updateSequence();
 }
 
 Ref<SpineTextureRegion> SpineMeshAttachment::get_spine_texture_region() {
@@ -43,7 +57,7 @@ Ref<SpineTextureRegion> SpineMeshAttachment::get_spine_texture_region() {
 
 void SpineMeshAttachment::update_region() {
 	SPINE_CHECK(_mesh_attachment(), )
-	_mesh_attachment()->updateRegion();
+	_mesh_attachment()->updateSequence();
 }
 
 Color SpineMeshAttachment::get_color() {
@@ -69,7 +83,8 @@ int SpineMeshAttachment::get_hull_length() {
 
 bool SpineMeshAttachment::is_linked_mesh() {
 	SPINE_CHECK(_mesh_attachment(), false)
-	return _mesh_attachment()->getParentMesh() != nullptr;
+	// spine-cpp 4.3 renamed getParentMesh() -> getSourceMesh().
+	return _mesh_attachment()->getSourceMesh() != nullptr;
 }
 
 bool SpineMeshAttachment::has_sequence() {

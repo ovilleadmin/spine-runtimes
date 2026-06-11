@@ -46,7 +46,7 @@ public:
 	// --- structural introspection (M3.7, for spine_feature_guard binary
 	// .skel scanning). sequence is a flag on the underlying spine-cpp
 	// RegionAttachment, unbound in stock spine-godot. ---
-	bool has_sequence();     // true if getSequence() != nullptr
+	bool has_sequence();     // true if the sequence has > 1 region (a real multi-frame sequence)
 
 private:
 	spine::RegionAttachment *_region_attachment() {

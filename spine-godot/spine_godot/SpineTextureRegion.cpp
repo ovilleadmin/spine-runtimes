@@ -88,39 +88,46 @@ Ref<SpineTextureRegion> SpineTextureRegion::from_texture(Ref<Texture2D> texture)
 	out->atlas_page->texture = (void *) out->renderer_object;
 
 	// AtlasRegion extends TextureRegion; spine-godot's render loop casts the
-	// result of attachment->getRegion() to AtlasRegion*, so we must provide
-	// one even though most of the atlas-specific fields are unused here.
+	// region resolved from the attachment's Sequence to AtlasRegion* and reads
+	// getPage()->texture, so we must provide one even though most of the
+	// atlas-specific fields are unused here. (4.3: fields became accessors.)
 	out->atlas_region = new spine::AtlasRegion();
-	out->atlas_region->page = out->atlas_page;
-	out->atlas_region->name = spine::String("spine-godot-runtime-region");
-	out->atlas_region->index = -1;
-	out->atlas_region->u = 0.0f;
-	out->atlas_region->v = 0.0f;
-	out->atlas_region->u2 = 1.0f;
-	out->atlas_region->v2 = 1.0f;
-	out->atlas_region->width = tex_width;
-	out->atlas_region->height = tex_height;
-	out->atlas_region->originalWidth = tex_width;
-	out->atlas_region->originalHeight = tex_height;
-	out->atlas_region->offsetX = 0;
-	out->atlas_region->offsetY = 0;
-	out->atlas_region->degrees = 0;
+	out->atlas_region->setPage(out->atlas_page);
+	out->atlas_region->setName(spine::String("spine-godot-runtime-region"));
+	out->atlas_region->setIndex(-1);
+	out->atlas_region->setU(0.0f);
+	out->atlas_region->setV(0.0f);
+	out->atlas_region->setU2(1.0f);
+	out->atlas_region->setV2(1.0f);
+	out->atlas_region->setRegionWidth(tex_width);
+	out->atlas_region->setRegionHeight(tex_height);
+	out->atlas_region->setOriginalWidth(tex_width);
+	out->atlas_region->setOriginalHeight(tex_height);
+	// packed dims MUST equal the original dims for an unstripped, unrotated
+	// region: 4.3's computeUVs offsets V by (originalHeight - offsetY -
+	// packedHeight) / pageHeight, so packedHeight=0 would shift every UV.
+	out->atlas_region->setPackedWidth(tex_width);
+	out->atlas_region->setPackedHeight(tex_height);
+	out->atlas_region->setOffsetX(0);
+	out->atlas_region->setOffsetY(0);
+	out->atlas_region->setRotate(false);
+	out->atlas_region->setDegrees(0);
 
 	return out;
 }
 
 void SpineTextureRegion::set_uv(float u, float v, float u2, float v2) {
 	if (!atlas_region) return;
-	atlas_region->u = u;
-	atlas_region->v = v;
-	atlas_region->u2 = u2;
-	atlas_region->v2 = v2;
+	atlas_region->setU(u);
+	atlas_region->setV(v);
+	atlas_region->setU2(u2);
+	atlas_region->setV2(v2);
 }
 
-float SpineTextureRegion::get_u()  { return atlas_region ? atlas_region->u  : 0.0f; }
-float SpineTextureRegion::get_v()  { return atlas_region ? atlas_region->v  : 0.0f; }
-float SpineTextureRegion::get_u2() { return atlas_region ? atlas_region->u2 : 1.0f; }
-float SpineTextureRegion::get_v2() { return atlas_region ? atlas_region->v2 : 1.0f; }
+float SpineTextureRegion::get_u()  { return atlas_region ? atlas_region->getU()  : 0.0f; }
+float SpineTextureRegion::get_v()  { return atlas_region ? atlas_region->getV()  : 0.0f; }
+float SpineTextureRegion::get_u2() { return atlas_region ? atlas_region->getU2() : 1.0f; }
+float SpineTextureRegion::get_v2() { return atlas_region ? atlas_region->getV2() : 1.0f; }
 
 Ref<Texture2D> SpineTextureRegion::get_texture() {
 	return source_texture;
